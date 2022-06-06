@@ -21,6 +21,90 @@ namespace TestMoika.Controllers
             _context = context;
         }
 
+        // POST: api/Sales/
+        [HttpPost("{productId}")]
+        public async Task<ActionResult<Sale>> CreateSale(int? buyerId,  int productId, int countBuyProduct = 0)
+        {
+            if (_context.Sales == null)
+            {
+                return Problem("Entity set 'Context.Sales'  is null.");
+            }
+
+            if (countBuyProduct <= 0)
+            {
+                return BadRequest("countBuyProduct less than zero");
+            }
+
+            Buyer? buyer = null;
+            if (buyerId.HasValue)
+            {
+                buyer = await _context.Buyers.FindAsync(buyerId.Value);
+                if (buyer == null)
+                {
+                    return BadRequest("Buyer not found");
+                }
+            }
+
+            var product = await _context.Products.FindAsync(productId);
+            if (product == null)
+            {
+                return BadRequest("Product not found");
+            }
+
+            //Получили сущность с id продуктом и максимальным количеством доступных к продаже
+            var providedProduct = await _context.ProvidedProducts.Where(x => x.ProductId == productId).OrderByDescending(x => x.ProductQuantity).FirstOrDefaultAsync();
+            if (providedProduct == null)
+            {
+                return BadRequest("ProvidedProduct not found");
+            }
+
+            if (providedProduct.ProductQuantity < countBuyProduct)
+            {
+                return BadRequest("countBuyProduct more than the available quantity of the product");
+            }
+
+            //Получаем торговую точку по найденному продукту
+            var salePoint = await _context.SalesPoints.Where(x => x.ProvidedProducts.Any(y => y.Id == providedProduct.Id)).FirstOrDefaultAsync();
+            if (salePoint == null)
+            {
+                return BadRequest("SalesPoint not found");
+            }
+
+            //Изменяем кол-во доступных товораво у точки
+            providedProduct.ProductQuantity -= countBuyProduct;
+
+
+            Sale sale = new Sale
+            {
+                Date = DateTime.Now,
+                Time = DateTime.Now.TimeOfDay,
+                SalesPointId = salePoint.Id,
+            };
+
+            if (buyerId.HasValue)
+            {
+                sale.BuyerId = buyer.Id;
+            }
+
+
+            _context.Sales.Add(sale);
+            await _context.SaveChangesAsync();
+
+            SalesData salesData = new SalesData
+            {
+                ProductId = productId,
+                ProductQuantity = countBuyProduct,
+                PropductIdAmount = product.Price * countBuyProduct,
+                SaleId = sale.Id,
+            };
+
+            _context.SalesDates.Add(salesData);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetSale", new { id = sale.Id }, sale); ;
+        }
+
+
         // GET: api/Sales
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Sale>>> GetSales()

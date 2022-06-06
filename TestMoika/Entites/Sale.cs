@@ -1,5 +1,6 @@
 ﻿
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace TestMoika.Entites
 {
@@ -11,6 +12,8 @@ namespace TestMoika.Entites
         /// Дата осуществления продажи
         /// </summary>
         public DateTime Date { get; set; }
+
+        [JsonIgnore]
         /// <summary>
         /// Время осуществления продажи
         /// </summary>
@@ -18,11 +21,10 @@ namespace TestMoika.Entites
 
         [ForeignKey(nameof(SalesPoint))]
         public int SalesPointId { get; set; }
-        public SalesPoint SalesPoint { get; set; }
+       //ublic SalesPoint SalesPoint { get; set; }
 
         [ForeignKey(nameof(Buyer))]
         public int? BuyerId { get; set; } = null;
-        public Buyer? Buyer { get; set; }
 
         public ICollection<SalesData> SalesData { get; set; }
 

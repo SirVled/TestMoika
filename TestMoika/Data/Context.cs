@@ -7,7 +7,7 @@ namespace TestMoika.Data
     {
         public Context(DbContextOptions<Context> options) : base(options)
         {
-            Database.EnsureDeleted();
+          //  Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
