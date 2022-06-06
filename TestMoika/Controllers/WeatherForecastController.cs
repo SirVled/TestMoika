@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using TestMoika.Data;
+using TestMoika.Entites;
 
 namespace TestMoika.Controllers
 {
@@ -11,23 +13,23 @@ namespace TestMoika.Controllers
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-        private readonly ILogger<WeatherForecastController> _logger;
+        private readonly Context _context;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(Context context)
         {
-            _logger = logger;
+            _context = context;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        public string Get()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            string ss = string.Empty;
+            foreach(var el in _context.SalesPoints.Select(x => x.ProvidedProducts).ToList())
             {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                ss += el.Count + "  ";
+            }
+            return ss;
+            
         }
     }
 }

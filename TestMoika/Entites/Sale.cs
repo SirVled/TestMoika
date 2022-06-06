@@ -20,6 +20,10 @@ namespace TestMoika.Entites
         public int SalesPointId { get; set; }
         public SalesPoint SalesPoint { get; set; }
 
+        [ForeignKey(nameof(Buyer))]
+        public int? BuyerId { get; set; } = null;
+        public Buyer? Buyer { get; set; }
+
         public ICollection<SalesData> SalesData { get; set; }
 
         public double TotalAmount { get; set; }
